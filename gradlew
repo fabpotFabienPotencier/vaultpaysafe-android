@@ -7,7 +7,10 @@
 ##############################################################################
 
 # Setting GRADLE_USER_HOME explicitly to avoid "Base: GRADLE_USER_HOME is unknown" error
-export GRADLE_USER_HOME="${GRADLE_USER_HOME:-$(pwd)/.gradle}"
+if [ -z "$GRADLE_USER_HOME" ]; then
+  export GRADLE_USER_HOME="$(pwd)/.gradle"
+  mkdir -p "$GRADLE_USER_HOME"
+fi
 echo "Using GRADLE_USER_HOME: $GRADLE_USER_HOME"
 
 # Attempt to set APP_HOME
@@ -27,6 +30,15 @@ SAVED="`pwd`"
 cd "`dirname \"$PRG\"`/" >/dev/null
 APP_HOME="`pwd -P`"
 cd "$SAVED" >/dev/null
+
+# Make sure Gradle properties exist
+if [ ! -d "$APP_HOME/.gradle" ]; then
+  mkdir -p "$APP_HOME/.gradle"
+fi
+
+if [ ! -f "$APP_HOME/.gradle/gradle.properties" ]; then
+  echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError" > "$APP_HOME/.gradle/gradle.properties"
+fi
 
 APP_NAME="Gradle"
 APP_BASE_NAME=`basename "$0"`
@@ -173,6 +185,9 @@ save () {
     echo " "
 }
 APP_ARGS=`save "$@"`
+
+# Add appname to gradle options to make sure gradle.properties is loaded
+GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.appname=$APP_BASE_NAME"
 
 # Collect all arguments for the java command, following the shell quoting and substitution rules
 eval set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\"-Dorg.gradle.appname=$APP_BASE_NAME\"" -classpath "\"$CLASSPATH\"" org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"

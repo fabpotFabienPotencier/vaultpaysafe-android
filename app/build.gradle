@@ -54,6 +54,19 @@ android {
 System.setProperty('user.home', new File('/Users/runner').absolutePath)
 System.setProperty('gradle.user.home', new File('/Users/runner/.gradle').absolutePath)
 
+// Add a task to print all important environment variables
+tasks.register('printEnv') {
+    doLast {
+        println "USER_HOME: ${System.getProperty('user.home')}"
+        println "GRADLE_USER_HOME: ${System.getProperty('gradle.user.home')}"
+        println "Working Directory: ${new File('.').absolutePath}"
+        new File("${System.getProperty('gradle.user.home')}/gradle.properties").text = """
+org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError
+"""
+        println "Created gradle.properties file at ${System.getProperty('gradle.user.home')}/gradle.properties"
+    }
+}
+
 dependencies {
     // Core Android Libraries
     implementation 'androidx.core:core-ktx:1.12.0'

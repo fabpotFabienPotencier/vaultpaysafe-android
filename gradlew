@@ -64,6 +64,15 @@ case "`uname`" in
     ;;
 esac
 
+# Make sure the gradle-wrapper.jar exists and is readable
+if [ ! -f "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" ]; then
+    echo "Error: gradle-wrapper.jar not found at $APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+    echo "Current directory: `pwd`"
+    echo "APP_HOME: $APP_HOME"
+    ls -la "$APP_HOME/gradle/wrapper/"
+    exit 1
+fi
+
 CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
 # Determine the Java command to use to start the JVM.
@@ -163,5 +172,9 @@ APP_ARGS=`save "$@"`
 
 # Collect all arguments for the java command, following the shell quoting and substitution rules
 eval set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\"-Dorg.gradle.appname=$APP_BASE_NAME\"" -classpath "\"$CLASSPATH\"" org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"
+
+echo "Running gradle with classpath: $CLASSPATH"
+echo "APP_HOME: $APP_HOME"
+ls -la "$APP_HOME/gradle/wrapper/" || echo "Cannot list wrapper directory"
 
 exec "$JAVACMD" "$@" 

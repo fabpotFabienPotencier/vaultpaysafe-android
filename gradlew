@@ -6,6 +6,10 @@
 ##
 ##############################################################################
 
+# Setting GRADLE_USER_HOME explicitly to avoid "Base: GRADLE_USER_HOME is unknown" error
+export GRADLE_USER_HOME="${GRADLE_USER_HOME:-$(pwd)/.gradle}"
+echo "Using GRADLE_USER_HOME: $GRADLE_USER_HOME"
+
 # Attempt to set APP_HOME
 # Resolve links: $0 may be a link
 PRG="$0"

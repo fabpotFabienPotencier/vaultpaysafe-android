@@ -44,7 +44,7 @@ mkdir -p "$GRADLE_USER_HOME"
 # Create local gradle.properties if it doesn't exist
 if [ ! -f "$GRADLE_USER_HOME/gradle.properties" ]; then
   echo "Creating default gradle.properties"
-  echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError" > "$GRADLE_USER_HOME/gradle.properties"
+  echo "org.gradle.jvmargs=-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError" > "$GRADLE_USER_HOME/gradle.properties"
 fi
 
 # Attempt to set APP_HOME

@@ -31,7 +31,7 @@ jobs:
     - name: Create required directories
       run: |
         mkdir -p $HOME/.gradle
-        echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError" > $HOME/.gradle/gradle.properties
+        echo "org.gradle.jvmargs=-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError" > $HOME/.gradle/gradle.properties
         
     - name: Print environment info
       run: |

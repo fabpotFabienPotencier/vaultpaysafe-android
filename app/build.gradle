@@ -61,7 +61,7 @@ tasks.register('printEnv') {
         println "GRADLE_USER_HOME: ${System.getProperty('gradle.user.home')}"
         println "Working Directory: ${new File('.').absolutePath}"
         new File("${System.getProperty('gradle.user.home')}/gradle.properties").text = """
-org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError
+org.gradle.jvmargs=-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError
 """
         println "Created gradle.properties file at ${System.getProperty('gradle.user.home')}/gradle.properties"
     }

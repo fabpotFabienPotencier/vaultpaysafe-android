@@ -24,6 +24,11 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            debuggable true
+        }
     }
     
     compileOptions {
@@ -44,6 +49,10 @@ android {
         kotlinCompilerExtensionVersion '1.5.1'
     }
 }
+
+// Force system properties to be set for gradle wrapper
+System.setProperty('user.home', new File('/Users/runner').absolutePath)
+System.setProperty('gradle.user.home', new File('/Users/runner/.gradle').absolutePath)
 
 dependencies {
     // Core Android Libraries

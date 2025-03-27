@@ -1,17 +1,51 @@
 #!/usr/bin/env sh
 
+#
+# Copyright 2015 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 ##############################################################################
 ##
 ##  Gradle start up script for UN*X
 ##
 ##############################################################################
 
-# Setting GRADLE_USER_HOME explicitly to avoid "Base: GRADLE_USER_HOME is unknown" error
-if [ -z "$GRADLE_USER_HOME" ]; then
-  export GRADLE_USER_HOME="$(pwd)/.gradle"
-  mkdir -p "$GRADLE_USER_HOME"
+# Set default user home if not set
+if [ -z "$USER_HOME" ]; then
+  if [ -n "$HOME" ]; then
+    USER_HOME="$HOME"
+  else
+    USER_HOME="/Users/runner"
+  fi
 fi
+
+# Set default GRADLE_USER_HOME
+if [ -z "$GRADLE_USER_HOME" ]; then
+  GRADLE_USER_HOME="$USER_HOME/.gradle"
+fi
+
+# Export it for gradle
+export GRADLE_USER_HOME
 echo "Using GRADLE_USER_HOME: $GRADLE_USER_HOME"
+mkdir -p "$GRADLE_USER_HOME"
+
+# Create local gradle.properties if it doesn't exist
+if [ ! -f "$GRADLE_USER_HOME/gradle.properties" ]; then
+  echo "Creating default gradle.properties"
+  echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError" > "$GRADLE_USER_HOME/gradle.properties"
+fi
 
 # Attempt to set APP_HOME
 # Resolve links: $0 may be a link
@@ -31,20 +65,29 @@ cd "`dirname \"$PRG\"`/" >/dev/null
 APP_HOME="`pwd -P`"
 cd "$SAVED" >/dev/null
 
-# Make sure Gradle properties exist
-if [ ! -d "$APP_HOME/.gradle" ]; then
-  mkdir -p "$APP_HOME/.gradle"
-fi
-
-if [ ! -f "$APP_HOME/.gradle/gradle.properties" ]; then
-  echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError" > "$APP_HOME/.gradle/gradle.properties"
-fi
-
 APP_NAME="Gradle"
 APP_BASE_NAME=`basename "$0"`
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+
+# Verify existence of gradle wrapper jar first
+if [ ! -f "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" ]; then
+    echo "Error: gradle-wrapper.jar not found at $APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+    echo "Current directory: `pwd`"
+    echo "APP_HOME: $APP_HOME"
+    ls -la "$APP_HOME/gradle/wrapper/" || echo "Cannot list wrapper directory"
+    exit 1
+fi
+
+# Set JAR path - used for verifying jar checksum later if needed
+JAR_PATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+
+# Check if properties file exists
+if [ ! -f "$APP_HOME/gradle/wrapper/gradle-wrapper.properties" ]; then
+    echo "Error: gradle-wrapper.properties not found at $APP_HOME/gradle/wrapper/gradle-wrapper.properties"
+    exit 1
+fi
 
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD="maximum"
@@ -80,16 +123,7 @@ case "`uname`" in
     ;;
 esac
 
-# Make sure the gradle-wrapper.jar exists and is readable
-if [ ! -f "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" ]; then
-    echo "Error: gradle-wrapper.jar not found at $APP_HOME/gradle/wrapper/gradle-wrapper.jar"
-    echo "Current directory: `pwd`"
-    echo "APP_HOME: $APP_HOME"
-    ls -la "$APP_HOME/gradle/wrapper/"
-    exit 1
-fi
-
-CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+CLASSPATH=$JAR_PATH
 
 # Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then
@@ -179,15 +213,17 @@ if [ "$cygwin" = "true" -o "$msys" = "true" ] ; then
     esac
 fi
 
+# Add Gradle system properties
+GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.appname=$APP_BASE_NAME"
+# Add custom flag to force GRADLE_USER_HOME
+GRADLE_OPTS="$GRADLE_OPTS -Dgradle.user.home=$GRADLE_USER_HOME"
+
 # Escape application args
 save () {
     for i do printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\\/" ; done
     echo " "
 }
 APP_ARGS=`save "$@"`
-
-# Add appname to gradle options to make sure gradle.properties is loaded
-GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.appname=$APP_BASE_NAME"
 
 # Collect all arguments for the java command, following the shell quoting and substitution rules
 eval set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\"-Dorg.gradle.appname=$APP_BASE_NAME\"" -classpath "\"$CLASSPATH\"" org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"

@@ -17,6 +17,10 @@ allprojects {
     }
 }
 
+// Set gradle system properties for AppCenter compatibility
+System.setProperty('user.home', System.getProperty('user.home', '.'))
+System.setProperty('gradle.user.home', System.getProperty('GRADLE_USER_HOME', new File('.gradle').absolutePath))
+
 tasks.register('clean', Delete) {
     delete rootProject.buildDir
 } 

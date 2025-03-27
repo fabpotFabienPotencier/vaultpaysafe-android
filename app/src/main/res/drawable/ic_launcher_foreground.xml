@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.55"
+        android:scaleY="0.55"
+        android:translateX="27"
+        android:translateY="27">
+        <!-- Vault symbol -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M50,30 L80,30 L80,80 L20,80 L20,30 L50,30" />
+        <path
+            android:fillColor="#1A56DB"
+            android:pathData="M50,20 L90,20 L90,90 L10,90 L10,20 L50,20 M50,25 L15,25 L15,85 L85,85 L85,25 L50,25" />
+
+        <!-- Lock handle -->
+        <path
+            android:fillColor="#1A56DB"
+            android:pathData="M45,20 L55,20 L55,40 L45,40 L45,20" />
+
+        <!-- Shield symbol -->
+        <path
+            android:fillColor="#1A56DB"
+            android:pathData="M50,45 L65,52 L65,65 Q65,70 60,75 Q55,80 50,80 Q45,80 40,75 Q35,70 35,65 L35,52 L50,45" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M50,50 L60,55 L60,65 Q60,68 57,71 Q54,74 50,74 Q46,74 43,71 Q40,68 40,65 L40,55 L50,50" />
+    </group>
+</vector> 

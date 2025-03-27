@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Exclude sensitive information from cloud backups -->
+        <exclude domain="sharedpref" path="vault_pay_safe_prefs.xml"/>
+    </cloud-backup>
+    <device-transfer>
+        <!-- Exclude sensitive information from device transfers -->
+        <exclude domain="sharedpref" path="vault_pay_safe_prefs.xml"/>
+    </device-transfer>
+</data-extraction-rules> 

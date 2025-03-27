@@ -5,6 +5,22 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
+// AppCenter build configuration
+if (System.getenv('APPCENTER_BUILD_ID') != null) {
+    println "Running in AppCenter environment - Build ID: ${System.getenv('APPCENTER_BUILD_ID')}"
+    
+    // Force AppCenter environment paths
+    System.setProperty('user.home', '/Users/runner')
+    System.setProperty('gradle.user.home', '/Users/runner/.gradle')
+    
+    // Create default gradle.properties with safe JVM args
+    new File('/Users/runner/.gradle/gradle.properties').text = """
+org.gradle.jvmargs=-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError
+org.gradle.daemon=true
+org.gradle.parallel=true
+"""
+}
+
 android {
     namespace 'com.vaultpaysafe'
     compileSdk 34
@@ -13,7 +29,7 @@ android {
         applicationId "com.vaultpaysafe"
         minSdk 24
         targetSdk 34
-        versionCode 1
+        versionCode System.getenv('APPCENTER_BUILD_ID') != null ? System.getenv('APPCENTER_BUILD_ID').toInteger() : 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -23,6 +39,16 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            
+            // AppCenter specific signing using env variables if available
+            if (System.getenv('APPCENTER_KEYSTORE_PASSWORD') != null) {
+                signingConfig signingConfigs.create('appcenterRelease') {
+                    storeFile file(System.getenv('APPCENTER_KEYSTORE_FILE') ?: "keystore.jks")
+                    storePassword System.getenv('APPCENTER_KEYSTORE_PASSWORD')
+                    keyAlias System.getenv('APPCENTER_KEY_ALIAS')
+                    keyPassword System.getenv('APPCENTER_KEY_PASSWORD')
+                }
+            }
         }
         debug {
             applicationIdSuffix ".debug"
@@ -48,22 +74,57 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.1'
     }
+    
+    // Fix specific issues for AppCenter
+    packagingOptions {
+        resources {
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}', 'META-INF/LICENSE.md', 'META-INF/LICENSE-notice.md']
+        }
+    }
 }
 
-// Force system properties to be set for gradle wrapper
-System.setProperty('user.home', new File('/Users/runner').absolutePath)
-System.setProperty('gradle.user.home', new File('/Users/runner/.gradle').absolutePath)
-
-// Add a task to print all important environment variables
-tasks.register('printEnv') {
+// Diagnostic task for AppCenter
+tasks.register('appCenterPreBuild') {
     doLast {
-        println "USER_HOME: ${System.getProperty('user.home')}"
-        println "GRADLE_USER_HOME: ${System.getProperty('gradle.user.home')}"
+        println "========== AppCenter Environment Info =========="
+        println "User Home: ${System.getProperty('user.home')}"
+        println "Gradle User Home: ${System.getProperty('gradle.user.home')}"
         println "Working Directory: ${new File('.').absolutePath}"
-        new File("${System.getProperty('gradle.user.home')}/gradle.properties").text = """
+        println "Java Version: ${System.getProperty('java.version')}"
+        println "Java Home: ${System.getProperty('java.home')}"
+        println "OS Name: ${System.getProperty('os.name')}"
+        
+        // List important environment variables
+        System.getenv().each { key, value ->
+            if (key.startsWith("APPCENTER_") || key.startsWith("GRADLE_") || key.startsWith("ANDROID_") || key.startsWith("JAVA_")) {
+                println "${key}: ${value}"
+            }
+        }
+        println "=============================================="
+        
+        // Ensure gradle.properties exists with correct settings
+        def gradleUserHome = System.getProperty('gradle.user.home') ?: "${System.getProperty('user.home')}/.gradle"
+        def gradlePropsFile = new File("${gradleUserHome}/gradle.properties")
+        if (!gradlePropsFile.exists()) {
+            gradlePropsFile.parentFile.mkdirs()
+            gradlePropsFile.text = """
 org.gradle.jvmargs=-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError
+org.gradle.daemon=true
+org.gradle.parallel=true
 """
-        println "Created gradle.properties file at ${System.getProperty('gradle.user.home')}/gradle.properties"
+            println "Created gradle.properties at ${gradlePropsFile.absolutePath}"
+        }
+    }
+}
+
+// Hook into build process for AppCenter
+gradle.taskGraph.whenReady { taskGraph ->
+    if (System.getenv('APPCENTER_BUILD_ID') != null) {
+        taskGraph.allTasks.each { task ->
+            if (task.name.startsWith('assemble') || task.name.startsWith('bundle')) {
+                task.dependsOn(tasks.named('appCenterPreBuild'))
+            }
+        }
     }
 }
 

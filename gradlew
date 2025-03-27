@@ -22,18 +22,26 @@
 ##
 ##############################################################################
 
-# Set default user home if not set
-if [ -z "$USER_HOME" ]; then
-  if [ -n "$HOME" ]; then
-    USER_HOME="$HOME"
-  else
-    USER_HOME="/Users/runner"
+# Detect if running in AppCenter
+if [ -n "$APPCENTER_BUILD_ID" ]; then
+  echo "Detected AppCenter Build Environment - Build ID: $APPCENTER_BUILD_ID"
+  # In AppCenter, ensure we use the runner home
+  USER_HOME="/Users/runner"
+  GRADLE_USER_HOME="/Users/runner/.gradle"
+else
+  # Set default user home if not set
+  if [ -z "$USER_HOME" ]; then
+    if [ -n "$HOME" ]; then
+      USER_HOME="$HOME"
+    else
+      USER_HOME="/Users/runner"
+    fi
   fi
-fi
 
-# Set default GRADLE_USER_HOME
-if [ -z "$GRADLE_USER_HOME" ]; then
-  GRADLE_USER_HOME="$USER_HOME/.gradle"
+  # Set default GRADLE_USER_HOME if not already set
+  if [ -z "$GRADLE_USER_HOME" ]; then
+    GRADLE_USER_HOME="$USER_HOME/.gradle"
+  fi
 fi
 
 # Export it for gradle
@@ -41,10 +49,12 @@ export GRADLE_USER_HOME
 echo "Using GRADLE_USER_HOME: $GRADLE_USER_HOME"
 mkdir -p "$GRADLE_USER_HOME"
 
-# Create local gradle.properties if it doesn't exist
+# Create local gradle.properties if it doesn't exist - used by Java 17
 if [ ! -f "$GRADLE_USER_HOME/gradle.properties" ]; then
   echo "Creating default gradle.properties"
   echo "org.gradle.jvmargs=-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError" > "$GRADLE_USER_HOME/gradle.properties"
+  echo "org.gradle.daemon=true" >> "$GRADLE_USER_HOME/gradle.properties"
+  echo "org.gradle.parallel=true" >> "$GRADLE_USER_HOME/gradle.properties"
 fi
 
 # Attempt to set APP_HOME
@@ -70,6 +80,19 @@ APP_BASE_NAME=`basename "$0"`
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+
+# Debug the environment if running in AppCenter
+if [ -n "$APPCENTER_BUILD_ID" ]; then
+  echo "============ AppCenter Gradle Environment ============"
+  echo "APP_HOME: $APP_HOME"
+  echo "PWD: `pwd`"
+  echo "USER_HOME: $USER_HOME"
+  echo "GRADLE_USER_HOME: $GRADLE_USER_HOME"
+  echo "JAVA_HOME: $JAVA_HOME"
+  echo "GRADLE_OPTS: $GRADLE_OPTS"
+  echo "JAVA_OPTS: $JAVA_OPTS"
+  echo "===================================================="
+fi
 
 # Verify existence of gradle wrapper jar first
 if [ ! -f "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" ]; then
@@ -147,6 +170,10 @@ Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
 fi
 
+# Check Java version
+JAVA_VERSION=`"$JAVACMD" -version 2>&1 | grep "version" | awk '{print $3}' | tr -d \"`
+echo "Detected Java version: $JAVA_VERSION"
+
 # Increase the maximum file descriptors if we can.
 if [ "$cygwin" = "false" -a "$darwin" = "false" -a "$nonstop" = "false" ] ; then
     MAX_FD_LIMIT=`ulimit -H -n`
@@ -213,10 +240,17 @@ if [ "$cygwin" = "true" -o "$msys" = "true" ] ; then
     esac
 fi
 
-# Add Gradle system properties
+# Add essential Gradle system properties
 GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.appname=$APP_BASE_NAME"
-# Add custom flag to force GRADLE_USER_HOME
+# Add explicitly set GRADLE_USER_HOME to Java options
 GRADLE_OPTS="$GRADLE_OPTS -Dgradle.user.home=$GRADLE_USER_HOME"
+# For AppCenter specifically, set more JVM args
+if [ -n "$APPCENTER_BUILD_ID" ]; then
+  # AppCenter-specific JVM settings
+  GRADLE_OPTS="$GRADLE_OPTS -Dfile.encoding=UTF-8"
+  GRADLE_OPTS="$GRADLE_OPTS -Dsun.jnu.encoding=UTF-8"
+  GRADLE_OPTS="$GRADLE_OPTS -Duser.country=US -Duser.language=en"
+fi
 
 # Escape application args
 save () {
